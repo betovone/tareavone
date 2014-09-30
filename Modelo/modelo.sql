@@ -1,5 +1,5 @@
 CREATE TABLE tv.prioridad(
-  prioridad_id BIGINT NOT NULL,
+  prioridad_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
   abreviacion VARCHAR(5) NOT NULL,
   estilo VARCHAR(100),
@@ -16,7 +16,7 @@ CREATE SEQUENCE tv.seq_prioridad;
 
 
 CREATE TABLE tv.tarea(
-  tarea_id BIGSERIAL,
+  tarea_id BIGINT NOT NULL,
   descripcion VARCHAR(100) NOT NULL,
   detalle TEXT NOT NULL,
   fecha_registro DATE NOT NULL,
@@ -37,8 +37,11 @@ COMMENT ON COLUMN tv.tarea.hora_acordada_fin IS 'Hora acordada de fin de tarea';
 COMMENT ON COLUMN tv.tarea.activo IS 'Activo';
 COMMENT ON COLUMN tv.tarea.prioridad_id IS 'Prioridad@{select prioridad_id as id, descripcion as item from prioridad where activo = 1}';
 
+CREATE SEQUENCE tv.seq_tarea;
+
+
 CREATE TABLE tv.estado(
-  estado_id BIGINT NOT NULL,
+  estado_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
   abreviacion VARCHAR(5) NOT NULL,
   activo INTEGER NOT NULL
@@ -50,19 +53,20 @@ CREATE SEQUENCE tv.seq_estado;
 
 
 CREATE TABLE tv.s_user(
-  user_id INTEGER NOT NULL
+  user_id BIGINT NOT NULL
 );
 
 CREATE SEQUENCE tv.seq_s_user;
 
 
 CREATE TABLE tv.tipo_usuario(
-  tipo_usuario_id BIGINT NOT NULL,
+  tipo_usuario_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
   abreviacion VARCHAR(5) NOT NULL,
   activo INTEGER NOT NULL
 );
 COMMENT ON TABLE tv.tipo_usuario IS 'Tipo de usuario';
+COMMENT ON COLUMN tv.tipo_usuario.tipo_usuario_id IS 'ID Tipo de Usuario';
 
 CREATE SEQUENCE tv.seq_tipo_usuario;
 
@@ -83,7 +87,7 @@ CREATE SEQUENCE tv.seq_tarea_usuario;
 
 
 CREATE TABLE tv.branch(
-  branch_id BIGINT NOT NULL,
+  branch_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
   abreviacion VARCHAR(5) NOT NULL,
   activo INTEGER NOT NULL
@@ -129,7 +133,7 @@ CREATE SEQUENCE tv.seq_historico_estado;
 
 
 CREATE TABLE tv.sector(
-  sector_id BIGINT NOT NULL,
+  sector_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
   abreviacion VARCHAR(5) NOT NULL,
   activo INTEGER NOT NULL
@@ -151,14 +155,14 @@ COMMENT ON COLUMN tv.sector_tarea.sector_id IS 'ID de sector';
 
 CREATE TABLE tv.sector_usuario(
   sector_usuario_id BIGSERIAL,
-  sector_id BIGINT,
-  user_id INTEGER
+  sector_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL
 );
 COMMENT ON TABLE tv.sector_usuario IS 'Sector usuario';
 COMMENT ON COLUMN tv.sector_usuario.sector_id IS 'ID de sector';
 
 CREATE TABLE tv.accion(
-  accion_id BIGINT NOT NULL,
+  accion_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
   abreviacion VARCHAR(5) NOT NULL,
   activo INTEGER NOT NULL
