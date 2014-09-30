@@ -1529,7 +1529,7 @@
   <jdbcUrl></jdbcUrl>
   <jdbcUser></jdbcUser>
   <jdbcPassword></jdbcPassword>
-  <jdbcSchema></jdbcSchema>
+  <jdbcSchema>tv</jdbcSchema>
   <jdbcCatalog></jdbcCatalog>
   <includeView>false</includeView>
 </net.java.amateras.db.visual.model.RootModel>
