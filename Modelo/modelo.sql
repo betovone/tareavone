@@ -1,3 +1,6 @@
+
+CREATE SCHEMA tv;
+
 CREATE TABLE tv.prioridad(
   prioridad_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
@@ -11,9 +14,6 @@ COMMENT ON COLUMN tv.prioridad.descripcion IS 'Descripción';
 COMMENT ON COLUMN tv.prioridad.abreviacion IS 'Abreviación';
 COMMENT ON COLUMN tv.prioridad.estilo IS 'Estilo';
 COMMENT ON COLUMN tv.prioridad.activo IS 'Activo';
-
-CREATE SEQUENCE tv.seq_prioridad;
-
 
 CREATE TABLE tv.tarea(
   tarea_id BIGINT NOT NULL,
@@ -49,16 +49,6 @@ CREATE TABLE tv.estado(
 COMMENT ON TABLE tv.estado IS 'Estado';
 COMMENT ON COLUMN tv.estado.estado_id IS 'ID de estado';
 
-CREATE SEQUENCE tv.seq_estado;
-
-
-CREATE TABLE tv.s_user(
-  user_id BIGINT NOT NULL
-);
-
-CREATE SEQUENCE tv.seq_s_user;
-
-
 CREATE TABLE tv.tipo_usuario(
   tipo_usuario_id INTEGER NOT NULL,
   descripcion VARCHAR(30) NOT NULL,
@@ -68,9 +58,6 @@ CREATE TABLE tv.tipo_usuario(
 COMMENT ON TABLE tv.tipo_usuario IS 'Tipo de usuario';
 COMMENT ON COLUMN tv.tipo_usuario.tipo_usuario_id IS 'ID Tipo de Usuario';
 
-CREATE SEQUENCE tv.seq_tipo_usuario;
-
-
 CREATE TABLE tv.tarea_usuario(
   tarea_usuario_id BIGINT NOT NULL,
   tarea_id BIGINT NOT NULL,
@@ -79,9 +66,9 @@ CREATE TABLE tv.tarea_usuario(
 );
 COMMENT ON TABLE tv.tarea_usuario IS 'Tareas de usuario';
 COMMENT ON COLUMN tv.tarea_usuario.tarea_usuario_id IS 'ID de tarea de usuario';
-COMMENT ON COLUMN tv.tarea_usuario.tarea_id IS 'ID de tarea';
-COMMENT ON COLUMN tv.tarea_usuario.user_id IS 'ID de usuario';
-COMMENT ON COLUMN tv.tarea_usuario.tipo_usuario_id IS 'ID de tipo de usuario';
+COMMENT ON COLUMN tv.tarea_usuario.tarea_id IS 'Tarea@{select tarea_id as id, descripcion as item from tv.tarea where activo=1}';
+COMMENT ON COLUMN tv.tarea_usuario.user_id IS 'Usuario@{select user_id as id, userlogin as item from security.s_user where enabled=1}';
+COMMENT ON COLUMN tv.tarea_usuario.tipo_usuario_id IS 'TipoUsuario@{select tipo_usuario_id as id, descripcion as item from tv.tipo_usuario where activo=1}';
 
 CREATE SEQUENCE tv.seq_tarea_usuario;
 
@@ -141,25 +128,47 @@ CREATE TABLE tv.sector(
 COMMENT ON TABLE tv.sector IS 'Sector';
 COMMENT ON COLUMN tv.sector.sector_id IS 'ID de sector';
 
-CREATE SEQUENCE tv.seq_sector;
-
-
 CREATE TABLE tv.sector_tarea(
-  sector_tarea_id BIGSERIAL,
+  sector_tarea_id BIGINT NOT NULL,
   tarea_id BIGINT NOT NULL,
   sector_id BIGINT NOT NULL
 );
 COMMENT ON TABLE tv.sector_tarea IS 'Sector tarea';
-COMMENT ON COLUMN tv.sector_tarea.tarea_id IS 'ID Tarea';
-COMMENT ON COLUMN tv.sector_tarea.sector_id IS 'ID de sector';
+COMMENT ON COLUMN tv.sector_tarea.sector_tarea_id IS 'ID Sector tarea';
+COMMENT ON COLUMN tv.sector_tarea.tarea_id IS 'Tarea@{select tarea_id as id, descripcion as item from tv.tarea where activo=1}';
+
+COMMENT ON COLUMN tv.sector_tarea.sector_id IS 'Sector@{SELECT
+	 s.sector_id as id,
+	 a.descripcion || '//' || s.descripcion as item
+	FROM
+	 tv.sector s 
+	 inner join tv.area_sector ase on ase.sector_id = s.sector_id
+	 inner join tv.area a on a.area_id = ase.area_id 
+	where s.activo=1}';
+
+CREATE SEQUENCE tv.seq_sector_tarea;
 
 CREATE TABLE tv.sector_usuario(
-  sector_usuario_id BIGSERIAL,
+  sector_usuario_id BIGINT NOT NULL,
   sector_id BIGINT NOT NULL,
-  user_id BIGINT NOT NULL
+  user_id BIGINT NOT NULL,
+  tipo_usuario_id INTEGER NOT NULL
 );
 COMMENT ON TABLE tv.sector_usuario IS 'Sector usuario';
-COMMENT ON COLUMN tv.sector_usuario.sector_id IS 'ID de sector';
+COMMENT ON COLUMN tv.sector_usuario.sector_usuario_id IS 'ID sector usuario';
+COMMENT ON COLUMN tv.sector_usuario.sector_id IS 'Sector@{SELECT
+	 s.sector_id as id,
+	 a.descripcion || '//' || s.descripcion as item
+	FROM
+	 tv.sector s 
+	 inner join tv.area_sector ase on ase.sector_id = s.sector_id
+	 inner join tv.area a on a.area_id = ase.area_id 
+	where s.activo=1}';
+COMMENT ON COLUMN tv.sector_usuario.user_id IS 'Usuario@{select user_id as id, userlogin as item from security.s_user where enabled=1}';
+COMMENT ON COLUMN tv.sector_usuario.tipo_usuario_id IS 'TipoUsuario@{select tipo_usuario_id as id, descripcion as item from tv.tipo_usuario where activo=1}';
+
+CREATE SEQUENCE tv.seq_sector_usuario;
+
 
 CREATE TABLE tv.accion(
   accion_id INTEGER NOT NULL,
@@ -170,19 +179,62 @@ CREATE TABLE tv.accion(
 COMMENT ON TABLE tv.accion IS 'Acción';
 COMMENT ON COLUMN tv.accion.accion_id IS 'ID de acción';
 
-CREATE SEQUENCE tv.seq_accion;
-
-
 CREATE TABLE tv.accion_usuario(
   accion_usuario_id INTEGER NOT NULL,
-  sector_usuario_id BIGINT,
-  accion_id BIGINT
+  sector_usuario_id BIGINT NOT NULL,
+  accion_id BIGINT NOT NULL
 );
 COMMENT ON TABLE tv.accion_usuario IS 'Acciones de usuarios';
 COMMENT ON COLUMN tv.accion_usuario.accion_usuario_id IS 'ID de Acción de Usuario';
-COMMENT ON COLUMN tv.accion_usuario.accion_id IS 'ID de acción';
+COMMENT ON COLUMN tv.accion_usuario.sector_usuario_id IS 'SectorUsuario@{SELECT
+	 su.sector_usuario_id as id,
+	 a.descripcion || '//' || s.descripcion || '//' || u.userlogin as item
+	FROM
+	 tv.sector_usuario su
+	 inner join tv.sector s on s.sector_id = su.sector_id
+	 inner join security.s_user u on user_id = su.user_id
+	 inner join tv.area_sector ase on ase.sector_id = s.sector_id
+	 inner join tv.area a on a.area_id = ase.area_id
+}';
+COMMENT ON COLUMN tv.accion_usuario.accion_id IS 'Acción@{select accion_id as id, descripcion as item from tv.accion where activo=1}';
 
 CREATE SEQUENCE tv.seq_accion_usuario;
+
+
+CREATE TABLE tv.area(
+  area_id INTEGER NOT NULL,
+  descripcion VARCHAR(30) NOT NULL,
+  abreviacion VARCHAR(5) NOT NULL,
+  activo INTEGER NOT NULL
+);
+COMMENT ON TABLE tv.area IS 'Area';
+COMMENT ON COLUMN tv.area.area_id IS 'ID de area';
+
+CREATE SEQUENCE tv.seq_area;
+
+CREATE TABLE tv.encargado_area(
+  encargado_area_id SERIAL,
+  area_id INTEGER NOT NULL,
+  user_id BIGINT
+);
+COMMENT ON TABLE tv.encargado_area IS 'Usuario/s encargado/s de area';
+COMMENT ON COLUMN tv.encargado_area.encargado_area_id IS 'ID encargado de area';
+COMMENT ON COLUMN tv.encargado_area.area_id IS 'Area@{select area_id as id, descripcion as item from tv.area where activo=1}';
+COMMENT ON COLUMN tv.encargado_area.user_id IS 'Usuario@{select user_id as id, userlogin as item from security.s_user where enabled=1}';
+
+
+
+CREATE TABLE tv.area_sector(
+  area_sector_id INTEGER NOT NULL,
+  sector_id INTEGER NOT NULL,
+  area_id INTEGER NOT NULL
+);
+COMMENT ON TABLE tv.area_sector IS 'Area Sector';
+COMMENT ON COLUMN tv.area_sector.area_sector_id IS 'ID de area sector';
+COMMENT ON COLUMN tv.area_sector.sector_id IS 'Sector@{select sector_id as id, descripcion as item from tv.sector where activo=1}';
+COMMENT ON COLUMN tv.area_sector.area_id IS 'Area@{select area_id as id, descripcion as item from tv.area where activo=1}';
+
+CREATE SEQUENCE tv.seq_area_sector;
 
 
 
@@ -226,10 +278,23 @@ ALTER TABLE tv.sector_tarea ADD CONSTRAINT FK_sector_tarea_1 FOREIGN KEY (sector
 ALTER TABLE tv.sector_usuario ADD PRIMARY KEY (sector_usuario_id);
 ALTER TABLE tv.sector_usuario ADD CONSTRAINT FK_sector_usuario_0 FOREIGN KEY (sector_id) REFERENCES tv.sector (sector_id) ON DELETE CASCADE;
 ALTER TABLE tv.sector_usuario ADD CONSTRAINT FK_sector_usuario_1 FOREIGN KEY (user_id) REFERENCES tv.s_user (user_id) ON DELETE CASCADE;
+ALTER TABLE tv.sector_usuario ADD CONSTRAINT FK_sector_usuario_2 FOREIGN KEY (tipo_usuario_id) REFERENCES tv.tipo_usuario (tipo_usuario_id) ON DELETE CASCADE;
+ALTER TABLE tv.sector_usuario ADD CONSTRAINT IDX_sector_usuario_1 UNIQUE (sector_id, user_id);
 
 ALTER TABLE tv.accion ADD PRIMARY KEY (accion_id);
 
 ALTER TABLE tv.accion_usuario ADD PRIMARY KEY (accion_usuario_id);
 ALTER TABLE tv.accion_usuario ADD CONSTRAINT FK_accion_usuario_0 FOREIGN KEY (sector_usuario_id) REFERENCES tv.sector_usuario (sector_usuario_id) ON DELETE CASCADE;
 ALTER TABLE tv.accion_usuario ADD CONSTRAINT FK_accion_usuario_1 FOREIGN KEY (accion_id) REFERENCES tv.accion (accion_id) ON DELETE CASCADE;
+
+ALTER TABLE tv.area ADD PRIMARY KEY (area_id);
+
+ALTER TABLE tv.area_sector ADD PRIMARY KEY (area_sector_id);
+ALTER TABLE tv.area_sector ADD CONSTRAINT FK_area_sector_0 FOREIGN KEY (sector_id) REFERENCES tv.sector (sector_id) ON DELETE CASCADE;
+ALTER TABLE tv.area_sector ADD CONSTRAINT FK_area_sector_1 FOREIGN KEY (area_id) REFERENCES tv.area (area_id) ON DELETE CASCADE;
+
+ALTER TABLE tv.encargado_area ADD PRIMARY KEY (encargado_area_id);
+ALTER TABLE tv.encargado_area ADD CONSTRAINT FK_encargado_area_0 FOREIGN KEY (area_id) REFERENCES tv.area (area_id) ON DELETE CASCADE;
+ALTER TABLE tv.encargado_area ADD CONSTRAINT FK_encargado_area_1 FOREIGN KEY (user_id) REFERENCES tv.s_user (user_id) ON DELETE CASCADE;
+ALTER TABLE tv.encargado_area ADD CONSTRAINT IDX_encargado_area_1 UNIQUE (area_id, user_id);
 
