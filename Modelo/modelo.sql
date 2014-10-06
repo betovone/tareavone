@@ -13,7 +13,7 @@ COMMENT ON COLUMN tv.prioridad.prioridad_id IS 'ID de prioridad';
 COMMENT ON COLUMN tv.prioridad.descripcion IS 'Descripción';
 COMMENT ON COLUMN tv.prioridad.abreviacion IS 'Abreviación';
 COMMENT ON COLUMN tv.prioridad.estilo IS 'Estilo';
-COMMENT ON COLUMN tv.prioridad.activo IS 'Activo';
+COMMENT ON COLUMN tv.prioridad.activo IS 'Activo@{1=Si|0=No}';
 
 CREATE TABLE tv.tarea(
   tarea_id BIGINT NOT NULL,
@@ -34,7 +34,7 @@ COMMENT ON COLUMN tv.tarea.fecha_registro IS 'Fecha de registro';
 COMMENT ON COLUMN tv.tarea.hora_registro IS 'Hora de registro';
 COMMENT ON COLUMN tv.tarea.fecha_acordada_fin IS 'Fecha acordada de fin de tarea';
 COMMENT ON COLUMN tv.tarea.hora_acordada_fin IS 'Hora acordada de fin de tarea';
-COMMENT ON COLUMN tv.tarea.activo IS 'Activo';
+COMMENT ON COLUMN tv.tarea.activo IS 'Activo@{1=Si|0=No}';
 COMMENT ON COLUMN tv.tarea.prioridad_id IS 'Prioridad@{select prioridad_id as id, descripcion as item from prioridad where activo = 1}';
 
 CREATE SEQUENCE tv.seq_tarea;
@@ -48,6 +48,7 @@ CREATE TABLE tv.estado(
 );
 COMMENT ON TABLE tv.estado IS 'Estado';
 COMMENT ON COLUMN tv.estado.estado_id IS 'ID de estado';
+COMMENT ON COLUMN tv.estado.activo IS 'Activo@{1=Si|0=No}';
 
 CREATE TABLE tv.tipo_usuario(
   tipo_usuario_id INTEGER NOT NULL,
@@ -57,6 +58,7 @@ CREATE TABLE tv.tipo_usuario(
 );
 COMMENT ON TABLE tv.tipo_usuario IS 'Tipo de usuario';
 COMMENT ON COLUMN tv.tipo_usuario.tipo_usuario_id IS 'ID Tipo de Usuario';
+COMMENT ON COLUMN tv.tipo_usuario.activo IS 'Activo@{1=Si|0=No}';
 
 CREATE TABLE tv.tarea_usuario(
   tarea_usuario_id BIGINT NOT NULL,
@@ -69,7 +71,7 @@ COMMENT ON COLUMN tv.tarea_usuario.tarea_usuario_id IS 'ID de tarea de usuario';
 COMMENT ON COLUMN tv.tarea_usuario.tarea_id IS 'Tarea@{select tarea_id as id, descripcion as item from tv.tarea where activo=1}';
 COMMENT ON COLUMN tv.tarea_usuario.user_id IS 'Usuario@{select user_id as id, userlogin as item from security.s_user where enabled=1}';
 COMMENT ON COLUMN tv.tarea_usuario.tipo_usuario_id IS 'TipoUsuario@{select tipo_usuario_id as id, descripcion as item from tv.tipo_usuario where activo=1}';
-
+COMMENT ON COLUMN tv.tarea.activo IS 'Activo@{1=Si|0=No}';
 CREATE SEQUENCE tv.seq_tarea_usuario;
 
 
@@ -83,7 +85,7 @@ COMMENT ON TABLE tv.branch IS 'Branch';
 COMMENT ON COLUMN tv.branch.branch_id IS 'ID de branch';
 COMMENT ON COLUMN tv.branch.descripcion IS 'Descripción';
 COMMENT ON COLUMN tv.branch.abreviacion IS 'Abreviación';
-COMMENT ON COLUMN tv.branch.activo IS 'Activo';
+COMMENT ON COLUMN tv.branch.activo IS 'Activo@{1=Si|0=No}';
 
 CREATE SEQUENCE tv.seq_branch;
 
@@ -127,6 +129,7 @@ CREATE TABLE tv.sector(
 );
 COMMENT ON TABLE tv.sector IS 'Sector';
 COMMENT ON COLUMN tv.sector.sector_id IS 'ID de sector';
+COMMENT ON COLUMN tv.sector.activo IS 'Activo@{1=Si|0=No}';
 
 CREATE TABLE tv.sector_tarea(
   sector_tarea_id BIGINT NOT NULL,
@@ -178,6 +181,7 @@ CREATE TABLE tv.accion(
 );
 COMMENT ON TABLE tv.accion IS 'Acción';
 COMMENT ON COLUMN tv.accion.accion_id IS 'ID de acción';
+COMMENT ON COLUMN tv.accion.activo IS 'Activo@{1=Si|0=No}';
 
 CREATE TABLE tv.accion_usuario(
   accion_usuario_id INTEGER NOT NULL,
@@ -209,6 +213,7 @@ CREATE TABLE tv.area(
 );
 COMMENT ON TABLE tv.area IS 'Area';
 COMMENT ON COLUMN tv.area.area_id IS 'ID de area';
+COMMENT ON COLUMN tv.area.activo IS 'Activo@{1=Si|0=No}';
 
 CREATE SEQUENCE tv.seq_area;
 
